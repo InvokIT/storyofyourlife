@@ -3,9 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "client-oauth2": "^4.2.1",
+    "dropbox": "^4.0.9",
+    "query-string": "^6.1.0",
     "react": "^16.4.2",
     "react-dom": "^16.4.2",
     "react-redux": "^5.0.7",
+    "react-router-dom": "^4.3.1",
     "react-scripts": "1.1.5",
     "redux": "^4.0.0",
     "redux-thunk": "^2.3.0"
@@ -16,9 +20,11 @@
     "test": "flow && react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
     "flow": "flow",
+    "flow-typed": "flow-typed install",
     "postinstall": "flow-typed install"
   },
   "devDependencies": {
+    "eslint": "^5.5.0",
     "flow-bin": "^0.80.0",
     "flow-typed": "^2.5.1"
   }
