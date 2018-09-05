@@ -1,28 +1,78 @@
-// @ flow
-import ClientOAuth2 from "client-oauth2";
+//@flow
+import queryString from "query-string";
+import { omit } from "lodash-es";
+import type { Storage } from "./storage";
 
-const tokens = new Map();
+type Callback = () => void | Promise<void>;
 
-const DROPBOX_OAUTH_URI: string = "https://www.dropbox.com/oauth2/authorize";
-const DROPBOX_OAUTH_APP_KEY: string = process.env.DROPBOX_APP_KEY || "";
-const DROPBOX_OAUTH_RETURN_URI: string = process.env.DROPBOX_RETURN_URI || "";
-
-const providers = {
-    "dropbox": new ClientOAuth2({
-        clientId: DROPBOX_OAUTH_APP_KEY,
-        authorizationUri: DROPBOX_OAUTH_URI,
-        redirectUri: DROPBOX_OAUTH_RETURN_URI
-    })
+type ProviderConfig = {
+    name: string,
+    authorization_uri: string,
+    client_id: string,
+    [string]:string
 };
 
-export const getToken = (provider: string) => {
-    return tokens.get(provider);
+type ReturnUriBuilder = (provider: string) => string;
+
+type TokenStorage = Storage<{[provider: string]: string}>;
+
+type OAuth2Options = {
+    tokenStorage: TokenStorage,
+    returnUriBuilder: ReturnUriBuilder
 };
 
-export const beginAuthorization = (provider: string) => {
+export default class OAuth2 {
+    _returnUriBuilder: ReturnUriBuilder;
+    _tokenStorage: TokenStorage;
+    +_providers = new Map<string, ProviderConfig>();
+    +_beforeAuthCallbacks: Callback[] = [];
 
-};
+    constructor(options: OAuth2Options) {
+        this._returnUriBuilder = options.returnUriBuilder;
+        this._tokenStorage = options.tokenStorage;
+    }
 
-export const finishAuthorization = () => {
+    addProvider(providerConfig: ProviderConfig) {
+        const providerName = providerConfig.name;
 
-};
+        this._providers.set(providerName, providerConfig);
+    }
+
+    getToken(provider: string) {
+        const tokens = this._tokenStorage.load();
+        if (tokens && tokens[provider]) {
+            return tokens[provider];
+        } else {
+            return null;
+        }
+    }
+
+    onBeforeAuthorization(cb: Callback) {
+        this._beforeAuthCallbacks.push(cb);
+    }
+
+    async beginAuthorization(providerName: string) {
+        const providerConfig = this._providers.get(providerName);
+
+        if (!providerConfig) {
+            throw new Error("Not a known OAuth2 provider: " + providerName);
+        }
+
+        await Promise.all(this._beforeAuthCallbacks.map(cb => cb()));
+
+        const params = omit(providerConfig, ["name", "authorizationUri"]);
+        params.redirect_uri = this._returnUriBuilder(providerName);
+
+        const authUri = `${providerConfig.authorization_uri}?${queryString.stringify(params)}`;
+
+        location.href = authUri;
+    }
+
+    finishAuthorization(providerName: string) {
+        const params = queryString.parse(location.hash);
+
+        if (params.hasOwnProperty("error")) {
+            //TODO
+        }
+    }
+}

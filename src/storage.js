@@ -1,23 +1,23 @@
 //@flow
 
-export interface Storage {
+export interface Storage<T> {
     save(value: any): void,
-    load<T>(): ?T,
+    load(): ?T,
     clear(): void
 }
 
-export class LocalStorage implements Storage {
+export class LocalStorage<T> implements Storage<T> {
     key: string
 
     constructor(key: string) {
         this.key = key;
     }
 
-    save(value: any) {
+    save(value: mixed) {
         window.localStorage.setItem(this.key, JSON.stringify(value));
     }
 
-    load<T>() {
+    load(): ?T {
         return JSON.parse(window.localStorage.getItem(this.key));
     }
 
@@ -25,3 +25,5 @@ export class LocalStorage implements Storage {
         window.localStorage.removeItem(this.key);
     }
 }
+
+export default LocalStorage;
