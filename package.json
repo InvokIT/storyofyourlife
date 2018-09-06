@@ -4,7 +4,6 @@
   "private": true,
   "dependencies": {
     "dropbox": "^4.0.9",
-    "lodash-es": "^4.17.10",
     "query-string": "^6.1.0",
     "react": "^16.4.2",
     "react-dom": "^16.4.2",
@@ -12,7 +11,8 @@
     "react-router-dom": "^4.3.1",
     "react-scripts": "1.1.5",
     "redux": "^4.0.0",
-    "redux-thunk": "^2.3.0"
+    "redux-thunk": "^2.3.0",
+    "uuid": "^3.3.2"
   },
   "scripts": {
     "start": "flow && react-scripts start",
